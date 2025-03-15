@@ -5,7 +5,7 @@ import "./App.css";
 import getClientIP from "./utils/getIp";
 
 function App() {
-  const [couponCode, setCouponCode] = useState(null);
+  const [couponCode, setCouponCode] = useState(localStorage.getItem("couponCode") || null);
   const [timeLeft, setTimeLeft] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -14,7 +14,13 @@ function App() {
     if (claimedTime) {
       const expirationTime = parseInt(claimedTime, 10) + 3600000;
       const now = Date.now();
-      setTimeLeft(Math.max(0, expirationTime - now));
+      const remainingTime = Math.max(0, expirationTime - now);
+      setTimeLeft(remainingTime);
+
+      if (remainingTime === 0) {
+        localStorage.removeItem("couponCode");
+        setCouponCode(null);
+      }
     }
   }, []);
 
@@ -26,6 +32,7 @@ function App() {
       return () => clearInterval(timer);
     } else {
       Cookies.remove("claimedTime");
+      localStorage.removeItem("couponCode");
       setCouponCode(null);
     }
   }, [timeLeft]);
@@ -46,9 +53,11 @@ function App() {
         userAgent: navigator.userAgent,
         ip: await getClientIP(),
       });
-      console.log(res)
+
       if (res.status === 200) {
-        setCouponCode(res.data.coupon.code);
+        const coupon = res.data.coupon.code;
+        setCouponCode(coupon);
+        localStorage.setItem("couponCode", coupon);
         setErrorMessage("");
         Cookies.set("claimedTime", Date.now().toString(), { expires: 1 / 24 });
         setTimeLeft(3600000);
@@ -73,7 +82,7 @@ function App() {
         {timeLeft > 0 ? (
           <p className="timer">You can claim again in: <span>{formatTime(timeLeft)}</span></p>
         ) : (
-          <button className="btn" onClick={claimCoupon}>Claim Coupon</button>
+          !couponCode && <button className="btn" onClick={claimCoupon}>Claim Coupon</button>
         )}
         {errorMessage && <p className="error">{errorMessage}</p>}
       </div>
