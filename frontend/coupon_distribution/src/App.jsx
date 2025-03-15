@@ -41,7 +41,7 @@ function App() {
       const clientId = Cookies.get("clientId") || `client_${Date.now()}_${Math.random().toString(36).slice(2)}`;
       Cookies.set("clientId", clientId, { expires: 7 });
 
-      const res = await axios.post("http://localhost:8000/api/claim", {
+      const res = await axios.post("https://coupon-distribution-ncyi.onrender.com/api/claim", {
         clientId,
         userAgent: navigator.userAgent,
         ip: await getClientIP(),
