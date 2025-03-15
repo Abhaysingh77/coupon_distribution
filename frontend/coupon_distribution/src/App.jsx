@@ -46,9 +46,9 @@ function App() {
         userAgent: navigator.userAgent,
         ip: await getClientIP(),
       });
-
+      console.log(res)
       if (res.status === 200) {
-        setCouponCode(res.data.couponCode);
+        setCouponCode(res.data.coupon.code);
         setErrorMessage("");
         Cookies.set("claimedTime", Date.now().toString(), { expires: 1 / 24 });
         setTimeLeft(3600000);
